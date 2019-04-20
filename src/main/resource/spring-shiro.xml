@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!-- 自定义Realm -->
+    <bean id="myRealm" class="cn.blog.realm.MyRealm"/>
+
+    <!--&lt;!&ndash; 安全管理器 &ndash;&gt;-->
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <property name="realm" ref="myRealm"/>
+    </bean>
+
+    <!--&lt;!&ndash; Shiro过滤器 &ndash;&gt;-->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <!--&lt;!&ndash; Shiro的核心安全接口,这个属性是必须的 &ndash;&gt;-->
+        <property name="securityManager" ref="securityManager"/>
+        <!--&lt;!&ndash; 身份认证失败，则跳转到登录页面的配置 &ndash;&gt;-->
+        <property name="loginUrl" value="/login.jsp"/>
+        <!--&lt;!&ndash; Shiro连接约束配置,即过滤链的定义 &ndash;&gt;-->
+        <property name="filterChainDefinitions">
+            <value>
+                /login=anon
+                /admin/**=authc
+            </value>
+        </property>
+    </bean>
+
+    <!--&lt;!&ndash; 保证实现了Shiro内部lifecycle函数的bean执行 &ndash;&gt;-->
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
+
+    <!--&lt;!&ndash; 开启Shiro注解 &ndash;&gt;-->
+    <bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator" depends-on="lifecycleBeanPostProcessor"/>
+    <bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+        <property name="securityManager" ref="securityManager"/>
+    </bean>
+</beans>
